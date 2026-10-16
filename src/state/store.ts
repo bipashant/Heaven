@@ -18,8 +18,6 @@ interface CosmosState {
   ready: boolean
   /** First-visit / help guide */
   guideOpen: boolean
-  /** Bumped each time a continued zoom-out is noticed at a realm's edge. */
-  boundaryNudge: number
   goTo: (id: RealmId, opts?: { fromTour?: boolean }) => void
   step: (dir: 1 | -1) => void
   setTraveling: (v: boolean) => void
@@ -32,7 +30,8 @@ interface CosmosState {
   setNavOpen: (v: boolean) => void
   setReady: () => void
   setGuideOpen: (v: boolean) => void
-  bumpBoundaryNudge: () => void
+  /** Update the current realm from free navigation, without flying anywhere. */
+  setCurrentSilently: (id: RealmId) => void
 }
 
 export const useCosmos = create<CosmosState>((set, get) => ({
@@ -47,7 +46,6 @@ export const useCosmos = create<CosmosState>((set, get) => ({
   navOpen: false,
   ready: false,
   guideOpen: false,
-  boundaryNudge: 0,
 
   goTo: (id, opts) =>
     set((s) => ({
@@ -92,5 +90,7 @@ export const useCosmos = create<CosmosState>((set, get) => ({
   setNavOpen: (v) => set(v && isCompact() ? { navOpen: true, infoOpen: false } : { navOpen: v }),
   setReady: () => set({ ready: true }),
   setGuideOpen: (v) => set({ guideOpen: v }),
-  bumpBoundaryNudge: () => set((s) => ({ boundaryNudge: s.boundaryNudge + 1 })),
+  setCurrentSilently: (id) => {
+    if (get().current !== id) set({ current: id })
+  },
 }))

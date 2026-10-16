@@ -160,8 +160,26 @@ export function LabelLayer() {
       rt.last = ''
     }
   }
+  // labels sit above the canvas; let scrolling over them still zoom the scene
+  const forwardWheel = (e: React.WheelEvent) => {
+    const canvas = document.querySelector('.stage canvas')
+    if (!canvas) return
+    const n = e.nativeEvent
+    canvas.dispatchEvent(
+      new WheelEvent('wheel', {
+        deltaX: n.deltaX,
+        deltaY: n.deltaY,
+        deltaMode: n.deltaMode,
+        clientX: n.clientX,
+        clientY: n.clientY,
+        ctrlKey: n.ctrlKey,
+        bubbles: true,
+        cancelable: true,
+      }),
+    )
+  }
   return (
-    <div className="label-layer" aria-hidden={false}>
+    <div className="label-layer" aria-hidden={false} onWheel={forwardWheel}>
       {defs.map((d) =>
         d.kind === 'realm' ? (
           <button

@@ -20,7 +20,11 @@ Requires a WebGL2 browser. It runs at 60 fps on Apple-silicon Macs.
 | Action | How |
 | --- | --- |
 | Travel | Click a realm in the left list, or a glowing name in the scene |
-| Orbit / zoom / pan | Drag / scroll or pinch / right-drag |
+| Look around | Drag (one finger on touch) |
+| Zoom | Scroll or pinch: zooms toward whatever is under the pointer or between your fingers, all the way in |
+| Move across the sky | Right-drag, Shift-drag or middle-drag; two-finger drag on touch |
+| Fly to a spot | Double-click or double-tap anything |
+| Back to the whole cosmos | Zoom far out, press Esc, or the egg / Cosmos button |
 | Ascend / descend | ↑ / ↓ keys, or the buttons at the bottom |
 | Cosmic overview | Esc, or the egg button |
 | Guided tour | **Yātrā tour**: 15 stops from Earth up to Vaikuṇṭha and down to Yamaloka |
@@ -47,7 +51,7 @@ Each realm has English and Devanagari names, presiding deities, a short descript
 
 - **Deities as luminous forms.** The figures are built from primitives with a "light-body" shader (fresnel rim plus a flowing inner glow). They are meant to be reverent and suggestive, not portraits.
 - **Purāṇic accuracy over modern astronomy.** The disc Earth, the stacked lokas and the planet order are shown as the texts describe them. The info panel notes where texts disagree.
-- **One continuous world.** Every realm lives in a single scene, so travel is a real camera flight. A cubic Bézier pulls back into space, then dives in, and orbit controls with per-realm limits take over on arrival.
+- **One continuous world, freely navigable.** Every realm lives in a single scene, so travel is a real camera flight: a cubic Bézier pulls back into space, then dives in, and any input interrupts it. Between flights you can go anywhere; the current world is recognised from what you're looking at (`src/data/zones.ts`), and zooming far out drifts back to the centre of the cosmos.
 
 ## Code map
 

@@ -44,14 +44,18 @@ function makeSteps(touch: boolean, compact: boolean): Step[] {
     {
       id: 'orbit',
       title: 'Look around',
-      body: touch ? 'Slide one finger across the screen to circle the view.' : 'Click and drag to circle the view. Right-drag to pan.',
+      body: touch
+        ? 'Slide one finger to look around. Drag with two fingers to move across the sky.'
+        : 'Drag to look around. Right-drag (or Shift-drag) to move across the sky.',
       art: 'drag',
       try: 'orbit',
     },
     {
       id: 'zoom',
       title: touch ? 'Pinch to zoom' : 'Scroll to zoom',
-      body: touch ? 'Pinch with two fingers to move closer or further away.' : 'Use the scroll wheel or trackpad to move closer or further away.',
+      body: touch
+        ? 'Pinch toward anything to fly into it, as close as you like. Double-tap a spot to jump there.'
+        : 'Scroll toward anything under the pointer to fly into it. Double-click a spot to jump there.',
       art: touch ? 'pinch' : 'scroll',
       try: 'zoom',
     },
@@ -59,8 +63,8 @@ function makeSteps(touch: boolean, compact: boolean): Step[] {
       id: 'travel',
       title: 'Travel between worlds',
       body: compact
-        ? 'Tap a glowing name in the sky, use Up and Down to rise or descend, or open Worlds for the full list.'
-        : 'Click a glowing name in the sky, press ↑ ↓ to rise or descend, or pick a world from the list on the left.',
+        ? 'Tap a glowing name, use Up and Down, or open Worlds for the full list. Zoom right out to see the whole cosmos again.'
+        : 'Click a glowing name, press ↑ ↓ to rise or descend, or pick from the list. Zoom right out to see the whole cosmos again.',
       art: 'tap',
       spot: compact ? '.dock' : '.nav',
     },

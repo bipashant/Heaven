@@ -792,30 +792,6 @@ button {
   background: rgba(255, 255, 255, 0.08);
 }
 
-/* --------------------------------------------------------- edge hint */
-
-.edge-hint {
-  position: absolute;
-  left: 50%;
-  bottom: 84px;
-  transform: translate(-50%, 8px);
-  padding: 9px 16px;
-  font-size: 12.5px;
-  color: #ffe2a0;
-  border-color: color-mix(in srgb, var(--gold) 45%, transparent);
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.35s ease, transform 0.35s ease;
-  white-space: nowrap;
-}
-
-
-
-.edge-hint.is-on {
-  opacity: 1;
-  transform: translate(-50%, 0);
-}
-
 /* ------------------------------------------------------------ arrival */
 
 .arrival {
@@ -1534,12 +1510,6 @@ button {
     min-width: 0;
     width: calc(100vw - 2 * var(--gutter) - 24px);
     max-width: 380px;
-  }
-  .edge-hint {
-    bottom: var(--above-dock);
-    max-width: calc(100vw - 2 * var(--gutter));
-    white-space: normal;
-    text-align: center;
   }
   .guide__card {
     bottom: var(--above-dock);
