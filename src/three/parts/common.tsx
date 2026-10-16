@@ -5,7 +5,7 @@ import { GeoBag, type V3 } from '../core/GeoBag'
 import { buildLotus, buildSerpent, type LotusSpec, type SerpentSpec } from './builders'
 import { glowMaterial, mats, standard } from '../core/materials'
 import { rng } from '../core/noise'
-import { textTexture } from '../core/textures'
+import { scaleTexture, textTexture } from '../core/textures'
 
 type MatMap = Record<string, THREE.Material>
 
@@ -139,25 +139,40 @@ export function Serpent({
   rotation?: V3
   scale?: number
 }) {
-  const materials = useMemo<MatMap>(
-    () => ({
+  const materials = useMemo<MatMap>(() => {
+    const scales = scaleTexture().clone()
+    scales.needsUpdate = true
+    scales.repeat.set(5, 7)
+    return {
       body: mats.serpent(color, emissive),
-      belly: standard(belly, 0.4, 0.2, belly, 0.25),
+      belly: new THREE.MeshStandardMaterial({ color: belly, map: scales, roughness: 0.4, metalness: 0.15, emissive: belly, emissiveIntensity: 0.18 }),
       gem: glowMaterial(gem, 5),
-    }),
-    [color, belly, gem, emissive],
-  )
+      eye: glowMaterial('#ff5a2a', 3),
+      tongue: standard('#b8102a', 0.4, 0.1, '#4a0010', 0.5),
+    }
+  }, [color, belly, gem, emissive])
+  // Level of detail: skip drawing serpents that are far away.
+  const lod = useRef<THREE.Group>(null)
+  const tick = useRef(Math.floor(Math.random() * 8))
+  const reach = useMemo(() => {
+    const ext = Math.max(spec.coil.rx, spec.coil.rz, ...spec.neck.map((p) => Math.hypot(p[0], p[1], p[2])))
+    return ext + spec.hoodSize * 2.5
+  }, [spec])
+  useFrame(({ camera }) => {
+    const g = lod.current
+    if (!g || tick.current++ % 8) return
+    g.getWorldPosition(_lodP)
+    g.visible = camera.position.distanceTo(_lodP) < 90 + reach * Math.abs(g.getWorldScale(_lodS).x) * 14
+  })
   return (
-    <BagMesh
-      build={(bag) => buildSerpent(bag, spec)}
-      deps={[JSON.stringify(spec)]}
-      materials={materials}
-      position={position}
-      rotation={rotation}
-      scale={scale}
-    />
+    <group ref={lod} position={position} rotation={rotation} scale={scale}>
+      <BagMesh build={(bag) => buildSerpent(bag, spec)} deps={[JSON.stringify(spec)]} materials={materials} />
+    </group>
   )
 }
+
+const _lodP = new THREE.Vector3()
+const _lodS = new THREE.Vector3()
 
 // ---------------------------------------------------------------------------
 // Forests (instanced)

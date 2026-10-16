@@ -100,7 +100,7 @@ export interface SerpentSpec {
   rows?: number
 }
 
-function taperedTube(curve: THREE.Curve<THREE.Vector3>, segments: number, radial: number, radius: (t: number) => number) {
+export function taperedTube(curve: THREE.Curve<THREE.Vector3>, segments: number, radial: number, radius: (t: number) => number) {
   const g = new THREE.TubeGeometry(curve, segments, 1, radial, false)
   const pos = g.attributes.position as THREE.BufferAttribute
   const c = new THREE.Vector3()
@@ -120,7 +120,40 @@ function taperedTube(curve: THREE.Curve<THREE.Vector3>, segments: number, radial
   return g
 }
 
-/** Keys: 'body', 'belly' (hood fronts), 'gem'. */
+/** Cobra hood: broad above, narrowing to the neck, cupped at the front. */
+function hoodShape(thick: number, cup: number, widthScale = 1) {
+  const g = new THREE.SphereGeometry(1, 30, 24)
+  const pos = g.attributes.position as THREE.BufferAttribute
+  for (let i = 0; i < pos.count; i++) {
+    const x = pos.getX(i)
+    const y = pos.getY(i)
+    const z = pos.getZ(i)
+    const t = (y + 1) / 2
+    const w = (0.28 + 0.72 * Math.pow(Math.sin(PI * Math.min(1, t * 1.08)), 0.6)) * widthScale
+    let Z = z * thick
+    if (z > 0) Z -= cup * (1 - x * x) * (1 - y * y) * 0.5
+    pos.setXYZ(i, x * w, y, Z)
+  }
+  g.computeVertexNormals()
+  return g
+}
+
+/** Serpent head: a tapering snout along +z. */
+function snakeHead() {
+  const g = new THREE.SphereGeometry(1, 18, 14)
+  const pos = g.attributes.position as THREE.BufferAttribute
+  for (let i = 0; i < pos.count; i++) {
+    const x = pos.getX(i)
+    const y = pos.getY(i)
+    const z = pos.getZ(i)
+    const f = Math.max(0, z)
+    pos.setXYZ(i, x * 0.55 * (1 - 0.3 * f), y * 0.36 * (1 - 0.35 * f) + 0.06 * f, z)
+  }
+  g.computeVertexNormals()
+  return g
+}
+
+/** Keys: 'body', 'belly' (hood fronts), 'gem', 'eye', 'tongue'. */
 export function buildSerpent(bag: GeoBag, s: SerpentSpec) {
   const { rx, rz, turns, rise, shrink = 0.4, y0 = 0, start = 0 } = s.coil
   const pts: THREE.Vector3[] = []
@@ -133,10 +166,10 @@ export function buildSerpent(bag: GeoBag, s: SerpentSpec) {
   }
   s.neck.forEach((p) => pts.push(new THREE.Vector3(...p)))
   const curve = new THREE.CatmullRomCurve3(pts, false, 'centripetal')
-  const segs = Math.min(900, pts.length * 8)
+  const segs = Math.min(1400, pts.length * 10)
   bag.add(
     'body',
-    taperedTube(curve, segs, 14, (t) => s.bodyR * Math.min(1, 0.15 + t * 6) * (t > 0.92 ? 1 - (t - 0.92) * 3 : 1)),
+    taperedTube(curve, segs, 20, (t) => s.bodyR * Math.min(1, 0.15 + t * 6) * (t > 0.92 ? 1 - (t - 0.92) * 3 : 1)),
   )
 
   const C = pts[pts.length - 1].clone()
@@ -147,6 +180,10 @@ export function buildSerpent(bag: GeoBag, s: SerpentSpec) {
   const hs = s.hoodSize
   const spread = s.spread ?? 1.2
   const rows = s.rows ?? 1
+  const back = hoodShape(0.22, 0.12)
+  const front = hoodShape(0.12, 0.1, 0.8)
+  const head = snakeHead()
+  const local = (m: THREE.Matrix4, p: V3) => new THREE.Vector3(...p).applyMatrix4(m).toArray() as V3
   for (let row = 0; row < rows; row++) {
     const n = row === 0 ? s.hoods : Math.max(3, s.hoods - row * 2)
     const rad = hs * (1.05 + row * 0.75)
@@ -157,27 +194,27 @@ export function buildSerpent(bag: GeoBag, s: SerpentSpec) {
         .addScaledVector(U2, Math.cos(phi) * rad * 0.7 + hs * 0.25)
         .addScaledVector(F, -row * hs * 0.35)
       const q = new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().makeBasis(Rv, U2, F))
-      const tilt = new THREE.Quaternion().setFromAxisAngle(F, -phi * 0.5)
-      q.premultiply(tilt)
-      const hood = new THREE.Matrix4().compose(P, q, new THREE.Vector3(hs * 0.6, hs * 0.72, hs * 0.13))
-      bag.add('body', new THREE.SphereGeometry(1, 16, 12), hood)
-      const front = new THREE.Matrix4().compose(
-        P.clone().addScaledVector(F, hs * 0.05),
-        q,
-        new THREE.Vector3(hs * 0.25, hs * 0.48, hs * 0.1),
+      q.premultiply(new THREE.Quaternion().setFromAxisAngle(F, -phi * 0.5))
+      bag.add('body', back.clone(), new THREE.Matrix4().compose(P, q, new THREE.Vector3(hs * 0.62, hs * 0.8, hs * 0.6)))
+      bag.add('belly', front.clone(), new THREE.Matrix4().compose(P.clone().addScaledVector(F, hs * 0.035), q, new THREE.Vector3(hs * 0.5, hs * 0.66, hs * 0.5)))
+      // the head juts forward from the base of the hood, snout tipped down
+      const hq = q.clone().multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), 0.3))
+      const hm = new THREE.Matrix4().compose(
+        P.clone().addScaledVector(F, hs * 0.2).addScaledVector(U2, -hs * 0.5),
+        hq,
+        new THREE.Vector3(hs * 0.26, hs * 0.26, hs * 0.26),
       )
-      bag.add('belly', new THREE.SphereGeometry(1, 14, 10), front)
-      // head & jewel
-      const head = new THREE.Matrix4().compose(
-        P.clone().addScaledVector(F, hs * 0.16).addScaledVector(U2, -hs * 0.42),
-        q,
-        new THREE.Vector3(hs * 0.15, hs * 0.11, hs * 0.26),
-      )
-      bag.add('body', new THREE.SphereGeometry(1, 12, 10), head)
-      bag.sphere('gem', P.clone().addScaledVector(U2, hs * 0.38).addScaledVector(F, hs * 0.12).toArray() as V3, hs * 0.07, 1, 8)
-      bag.between('body', C.toArray() as V3, P.clone().addScaledVector(U2, -hs * 0.3).toArray() as V3, s.bodyR * 0.6, s.bodyR * 0.45, 10)
+      bag.add('body', head.clone(), hm)
+      for (const sx of [-1, 1]) bag.sphere('eye', local(hm, [sx * 0.36, 0.17, 0.42]), hs * 0.028, 1, 8)
+      bag.tube('tongue', [local(hm, [0, -0.08, 0.95]), local(hm, [0, -0.12, 1.3]), local(hm, [0, -0.13, 1.45])], hs * 0.008, 6, 4)
+      for (const sx of [-1, 1]) bag.tube('tongue', [local(hm, [0, -0.13, 1.45]), local(hm, [sx * 0.07, -0.16, 1.62])], hs * 0.006, 3, 4)
+      bag.sphere('gem', P.clone().addScaledVector(U2, hs * 0.48).addScaledVector(F, hs * 0.1).toArray() as V3, hs * 0.07, 1, 10)
+      bag.between('body', C.toArray() as V3, P.clone().addScaledVector(U2, -hs * 0.35).toArray() as V3, s.bodyR * 0.62, s.bodyR * 0.45, 14)
     }
   }
+  back.dispose()
+  front.dispose()
+  head.dispose()
 }
 
 // ---------------------------------------------------------------------------

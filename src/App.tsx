@@ -3,6 +3,7 @@ import { Canvas } from '@react-three/fiber'
 import * as THREE from 'three'
 import { Experience } from './three/Experience'
 import { Interface } from './ui/Interface'
+import { POSTHOG_ENABLED } from './analytics'
 import { LabelLayer } from './three/parts/Labels'
 
 /** Wait (briefly) for the Devanagari web font so canvas glyph textures use it. */
@@ -36,7 +37,14 @@ export default function App() {
             flat
             dpr={[1, 1.75]}
             camera={{ fov: 50, near: 1, far: 80000, position: [4000, 2000, 6000] }}
-            gl={{ antialias: false, powerPreference: 'high-performance', stencil: false }}
+            gl={{
+              antialias: false,
+              powerPreference: 'high-performance',
+              stencil: false,
+              // WebGL discards the frame after compositing. Replay has to read those pixels back,
+              // so keep the buffer only where PostHog records (it costs some performance).
+              preserveDrawingBuffer: POSTHOG_ENABLED,
+            }}
             onCreated={({ gl }) => {
               gl.toneMapping = THREE.NoToneMapping
             }}

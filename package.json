@@ -10,9 +10,12 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@posthog/react": "^1.11.3",
     "@react-three/drei": "10.7.9",
     "@react-three/fiber": "9.8.1",
     "@react-three/postprocessing": "3.2.0",
+    "@vercel/analytics": "^2.0.1",
+    "posthog-js": "^1.438.12",
     "postprocessing": "6.39.5",
     "react": "19.3.0",
     "react-dom": "19.3.0",

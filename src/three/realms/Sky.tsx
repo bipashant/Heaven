@@ -3,7 +3,7 @@ import { useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 import { uTime } from '../core/time'
 import { rng } from '../core/noise'
-import { Billboards } from '../parts/Billboards'
+import { Multiverse } from './Multiverse'
 
 // The Causal Ocean (Kāraṇa-samudra): a deep nebula sky in which countless
 // other Brahmāṇḍas float as distant golden motes.
@@ -117,23 +117,7 @@ export function Sky() {
         <sphereGeometry args={[30000, 48, 24]} />
       </mesh>
       <points geometry={stars.g} material={stars.m} frustumCulled={false} />
-      {/* Other universes, each a golden egg in the Causal Ocean */}
-      <Billboards
-        seed={88}
-        items={(r) =>
-          Array.from({ length: 70 }, () => {
-            const v = new THREE.Vector3(r.range(-1, 1), r.range(-0.6, 0.8), r.range(-1, 1)).normalize().multiplyScalar(r.range(7000, 16000))
-            return {
-              p: [v.x, v.y, v.z] as [number, number, number],
-              size: r.range(160, 520),
-              color: r.pick(['#ffcf7a', '#ffd9a0', '#ffe7c2', '#f7b860']),
-              alpha: r.range(0.35, 0.8),
-            }
-          })
-        }
-        twinkle={0.25}
-        intensity={1.6}
-      />
+      <Multiverse />
     </group>
   )
 }

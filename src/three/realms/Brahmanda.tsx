@@ -231,7 +231,7 @@ export function Brahmanda() {
       <Dhruva />
       <CelestialGanga />
       {/* the effulgence of the spiritual sky (brahmajyoti) */}
-      <Glow position={[0, 1070, 0]} size={1000} color="#ffe2a8" opacity={0.16} />
+      <Glow position={[0, 1160, 0]} size={900} color="#ffe2a8" opacity={0.14} depthTest={false} />
       <Glow position={[0, EGG.center[1], 0]} size={2600} color="#ffb84a" opacity={0.03} />
     </group>
   )

@@ -84,7 +84,12 @@ export const KSHIRA_POS: Vec3 = [
 export const JAMBU_R = 40
 export const MERU_HEIGHT = 22
 export const KAILASH = { x: -6, z: 24.2 }
+/** Shelf at Kailāsa's south foot (Nandī waits here). */
 export const SHIVA_SEAT = { x: -6, z: 26.7, h: 1.35 }
+/** The peak: base height, height, base radius, and the fraction where the summit shelf begins. */
+export const KAILASH_PEAK = { baseY: SHIVA_SEAT.h - 0.3, H: 4.6, R0: 1.9, cut: 0.84 }
+/** Śiva and Pārvatī sit on the summit. */
+export const KAILASH_SUMMIT_Y = KAILASH_PEAK.baseY + KAILASH_PEAK.H * KAILASH_PEAK.cut + 0.12
 export const LAKES = [
   { name: 'Mānasarovara', x: -3.0, z: 30.5, r: 1.2 },
   { name: 'Rākṣastāl', x: -9.2, z: 30.2, r: 0.95 },

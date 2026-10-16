@@ -25,7 +25,10 @@ Requires a WebGL2 browser. It runs at 60 fps on Apple-silicon Macs.
 | Cosmic overview | Esc, or the egg button |
 | Guided tour | **Yātrā tour**: 15 stops from Earth up to Vaikuṇṭha and down to Yamaloka |
 | Info panel | `i` |
+| How to explore | **?** button — replays the first-visit guide |
 | Sound | Speaker button: synthesised tanpura drone and a temple bell on arrival |
+
+**On phones** a bottom dock holds Worlds, Up, the current world (tap for its story), Down and Cosmos. The world list and the story open as bottom sheets you can drag down to close. First-time visitors get a short guide that waits for them to actually drag and pinch, then offers places to start such as Svarga, Kailash and Kṣīra Sāgara. It's shown once (remembered in `localStorage`).
 
 ## What's in the cosmos
 
@@ -33,9 +36,10 @@ The layout follows the hybrid Purāṇic model, mainly the *Bhāgavata* and *Vi�
 
 - **Beyond the egg** (across the Virajā river): **Vaikuṇṭha**, with seven gates, Nārāyaṇa on Śeṣa with Lakṣmī, Garuḍa, Jaya and Vijaya, and flying vimānas.
 - **Upper worlds**: **Satyaloka** (Brahmā, Sarasvatī, the haṁsa, the four Vedas), **Tapoloka**, **Janaloka** (the four Kumāras), **Maharloka** (Bhṛgu and the ṛṣis), **Svarga** (Indra's Amarāvatī with Airāvata, the Kalpavṛkṣa and Pārijāta, apsarās and Indra's rainbow) and **Bhuvarloka** (the sun's twelve-spoked chariot circling Meru, the moon, Rāhu, the 28 nakṣatras, the five planets in Bhāgavata order, Dhruva and the Saptarṣi).
-- **Earth**: **Bhū-maṇḍala**, with seven dvīpas and seven oceans of salt, sugarcane juice, wine, ghee, milk, yogurt and sweet water, plus Lokāloka at the rim. **Jambūdvīpa** has golden Meru, the varṣa mountain ranges and the Gaṅgā splitting into four. **Mount Kailash** has Śiva and Pārvatī on a tiger skin, Nandī, the trident, the Gaṅgā flowing from Śiva's locks, and Mānasarovara and Rākṣastāl. **Kṣīra Sāgara** has Viṣṇu reclining on Śeṣa, Lakṣmī, Brahmā on the navel lotus, and Śvetadvīpa.
+- **Earth**: **Bhū-maṇḍala**, with seven dvīpas and seven oceans of salt, sugarcane juice, wine, ghee, milk, yogurt and sweet water, plus Lokāloka at the rim. **Jambūdvīpa** has golden Meru, the varṣa mountain ranges and the Gaṅgā splitting into four. **Mount Kailash** has Śiva and Pārvatī seated on its summit as high-detail sculpted figures, on a tiger skin beside the trident. Nandī waits at the foot, the Gaṅgā pours from Śiva's locks down the west face, and the lakes Mānasarovara and Rākṣastāl lie below. **Kṣīra Sāgara** is a swelling sea of milk with floating lotuses and mist. On it, a detailed Viṣṇu reclines on Śeṣa's coils under seven cobra hoods, holding the conch and a spinning Sudarśana. Lakṣmī presses his feet, four-headed Brahmā sits on the navel lotus, and Śvetadvīpa lies nearby.
 - **Lower worlds**: Atala, Vitala (Hāṭakeśvara), Sutala (Bali, with Vāmana at the gate), Talātala (Tripura), Mahātala (Kadru's serpents), Rasātala (the Dānava fortress) and **Pātāla** (Vāsuki's Nāgaloka, with Ananta Śeṣa's hoods rising beneath everything).
 - **Yamaloka**: Saṁyamanī, with Yama, his buffalo and Citragupta, the Vaitaraṇī river, and the Narakas shown as places of purification.
+- **The Causal Ocean**: countless other Brahmāṇḍas glow far off in the background as soft egg-shaped lights (Bhāgavata 6.16.37; 10.14.11).
 
 Each realm has English and Devanagari names, presiding deities, a short description, key facts, and a verse with its source. Verses are given in Devanagari, IAST and translation, or as a referenced paraphrase where no verse is quoted.
 
@@ -55,8 +59,8 @@ src/
   three/Experience.tsx  scene root, lights, reflections, post-processing
   three/CameraRig.tsx   flights + orbit controls + dynamic near plane
   three/core/           shared clock, noise, canvas textures, materials, GeoBag (geometry merging)
-  three/parts/          deity figure builder, lotus/serpent/temple/animal builders, billboards, labels
-  three/realms/         one file per region (Beyond, UpperLokas, Svarga, Bhuvarloka, bhu/, LowerLokas, Yamaloka)
+  three/parts/          deity figure builders (figureBuilder = light forms; sculpt + divinePair + divineVishnu + HighFigure = detailed Śiva, Pārvatī, Viṣṇu, Lakṣmī & Brahmā), lotus/serpent/temple/animal builders, billboards, labels
+  three/realms/         one file per region (Beyond, UpperLokas, Svarga, Bhuvarloka, bhu/, LowerLokas, Yamaloka, Multiverse)
   ui/Interface.tsx      navigator, info panel, toolbar, tour/keyboard behaviour
   audio/drone.ts        Web Audio tanpura and bell
 ```

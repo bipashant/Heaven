@@ -1,4 +1,4 @@
-import { KSHIRA_POS, SHIVA_SEAT, Y, type Vec3 } from './layout'
+import { KAILASH, KAILASH_SUMMIT_Y, KSHIRA_POS, Y, type Vec3 } from './layout'
 
 export type RealmId =
   | 'brahmanda'
@@ -90,6 +90,7 @@ export const REALMS: Record<RealmId, Realm> = {
       'The lower part of the egg holds the Garbhodaka ocean',
       'The Gaṅgā enters at the top of the egg and descends to Meru',
       'Purāṇas differ in detail; this map mostly follows the Bhāgavata',
+      'Unlimited universes pass through the Lord’s pores like dust through a lattice window (Bhāgavata 10.14.11)',
     ],
     verse: {
       devanagari: 'आब्रह्मभुवनाल्लोकाः पुनरावर्तिनोऽर्जुन ।\nमामुपेत्य तु कौन्तेय पुनर्जन्म न विद्यते ॥',
@@ -376,7 +377,7 @@ export const REALMS: Record<RealmId, Realm> = {
     tier: 'In the Himālaya, Jambūdvīpa',
     deities: ['Śiva', 'Pārvatī', 'Nandī'],
     description: [
-      'Kailāsa is Śiva’s home. Here he sits in meditation with Pārvatī beside him, the crescent moon and the river Gaṅgā held in his matted locks, while his bull Nandī waits in front of them.',
+      'Kailāsa is Śiva’s home. On its summit he sits in meditation with Pārvatī beside him, the crescent moon and the river Gaṅgā held in his matted locks. His bull Nandī waits at the foot of the mountain, gazing up at him.',
       'The real mountain rises 6,638 m in western Tibet, near the lakes Mānasarovara and Rākṣastāl. Hindus, Buddhists, Jains and followers of Bön all hold it sacred. By custom no one climbs it; pilgrims walk the 52 km circuit around it (parikramā).',
     ],
     facts: [
@@ -393,10 +394,10 @@ export const REALMS: Record<RealmId, Realm> = {
       source: 'Kālidāsa, Raghuvaṁśa 1.1',
     },
     accent: '#a9d8ff',
-    focus: [SHIVA_SEAT.x, SHIVA_SEAT.h + 1.0, SHIVA_SEAT.z - 0.9],
-    view: [2.2, 2.4, 9.6],
-    orbit: { min: 2.2, max: 140, maxPolar: 1.45 },
-    label: { at: [SHIVA_SEAT.x, 8, SHIVA_SEAT.z - 2], range: 760 },
+    focus: [KAILASH.x, KAILASH_SUMMIT_Y + 0.45, KAILASH.z + 0.12],
+    view: [1.2, 0.62, 3.5],
+    orbit: { min: 0.9, max: 140, maxPolar: 1.52 },
+    label: { at: [KAILASH.x, KAILASH_SUMMIT_Y + 2.6, KAILASH.z], range: 760 },
     tone: 0.5,
   },
 
@@ -410,7 +411,7 @@ export const REALMS: Record<RealmId, Realm> = {
     tier: '5th ocean of Bhū-maṇḍala',
     deities: ['Viṣṇu (Anantaśayana)', 'Lakṣmī', 'Ananta Śeṣa', 'Brahmā'],
     description: [
-      'In the Ocean of Milk, Viṣṇu reclines on the coils of Ananta Śeṣa, the endless serpent, while Lakṣmī serves at his feet. A lotus grows from his navel, and Brahmā sits on it. In times of crisis the devas come to the shore here to pray.',
+      'In the Ocean of Milk, Viṣṇu reclines on the coils of Ananta Śeṣa, the endless serpent, whose seven hoods shade his head. Lakṣmī sits at his feet and presses them. A lotus grows from his navel, and Brahmā sits on it. In times of crisis the devas come to the shore here to pray.',
       'In the Samudra Manthan, devas and asuras churned this ocean with Mount Mandara as the rod and Vāsuki as the rope. It yielded amṛta, Lakṣmī, the Pārijāta tree and Airāvata, and also the poison hālāhala, which Śiva drank.',
     ],
     facts: [
@@ -428,9 +429,9 @@ export const REALMS: Record<RealmId, Realm> = {
       source: 'Viṣṇu dhyāna śloka (traditional)',
     },
     accent: '#e9f1ff',
-    focus: [KSHIRA_POS[0], 1.6, KSHIRA_POS[2]],
-    view: [7, 8, 14],
-    orbit: { min: 4, max: 260, maxPolar: 1.5 },
+    focus: [KSHIRA_POS[0] + 0.3, 1.75, KSHIRA_POS[2] + 0.2],
+    view: [4.4, 3.0, 7.6],
+    orbit: { min: 1.4, max: 260, maxPolar: 1.5 },
     label: { at: [KSHIRA_POS[0], 12, KSHIRA_POS[2]], range: 760 },
     tone: 0.75,
   },

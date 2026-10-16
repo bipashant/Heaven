@@ -16,3 +16,6 @@ export const IconMute = (p: P) => <S {...p}><path d="M4 10v4h4l5 4V6L8 10H4z" />
 export const IconInfo = (p: P) => <S {...p}><circle cx="12" cy="12" r="9" /><path d="M12 11v6M12 7.5v.01" /></S>
 export const IconClose = (p: P) => <S {...p}><path d="M6 6l12 12M18 6L6 18" /></S>
 export const IconList = (p: P) => <S {...p}><path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01" /></S>
+export const IconHelp = (p: P) => <S {...p}><circle cx="12" cy="12" r="9" /><path d="M9.6 9.3a2.5 2.5 0 0 1 4.8.9c0 1.7-2.4 2.2-2.4 3.6M12 17h.01" /></S>
+export const IconCheck = (p: P) => <S {...p}><path d="M5 12.5l4.5 4.5L19 7.5" /></S>
+export const IconArrowRight = (p: P) => <S {...p}><path d="M5 12h14M13 6l6 6-6 6" /></S>

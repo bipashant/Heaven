@@ -79,7 +79,9 @@ export function CameraRig() {
     if (!ctr) return
     const realm = REALMS[useCosmos.getState().current]
     const toTarget = v(realm.focus)
-    const toPos = toTarget.clone().add(v(realm.view))
+    // portrait screens see less sideways, so step back a little
+    const framing = camera.aspect >= 1 ? 1 : Math.min(1.6, Math.pow(1 / camera.aspect, 0.55))
+    const toPos = toTarget.clone().add(v(realm.view).multiplyScalar(framing))
     const fromPos = camera.position.clone()
     const fromTarget = ctr.target.clone()
     const dist = fromPos.distanceTo(toPos)
@@ -126,7 +128,7 @@ export function CameraRig() {
         camera.fov = BASE_FOV
         const realm = REALMS[state.current]
         ctr.minDistance = realm.orbit.min
-        ctr.maxDistance = realm.orbit.max
+        ctr.maxDistance = realm.orbit.max * (camera.aspect >= 1 ? 1 : 1.6)
         ctr.minPolarAngle = realm.orbit.minPolar ?? 0
         ctr.maxPolarAngle = realm.orbit.maxPolar ?? Math.PI - 0.05
         ctr.enabled = true

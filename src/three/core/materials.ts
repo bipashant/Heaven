@@ -48,11 +48,14 @@ const divineFrag = /* glsl */ `
     float ndv = clamp(dot(N, V), 0.0, 1.0);
     float fres = pow(1.0 - ndv, 2.3);
     vec3 base = uBase * vTint;
-    float key = clamp(dot(N, normalize(vec3(0.35, 0.8, 0.5))), 0.0, 1.0);
+    vec3 L = normalize(vec3(0.35, 0.8, 0.5));
+    float key = clamp((dot(N, L) + 0.3) / 1.3, 0.0, 1.0);
     float fill = clamp(dot(N, normalize(vec3(-0.6, -0.2, 0.4))), 0.0, 1.0);
+    float spec = pow(max(dot(N, normalize(L + V)), 0.0), 42.0);
     float wave = 0.5 + 0.5 * sin(vLocal.y * 16.0 - uTime * 1.4 + sin(vLocal.x * 11.0 + uTime * 0.6) * 1.6);
-    vec3 col = base * (0.36 + 0.62 * key + 0.12 * fill);
+    vec3 col = base * (0.3 + 0.66 * key * key + 0.12 * fill);
     col += base * uFlow * wave * 0.22;
+    col += vec3(1.0, 0.98, 0.95) * spec * 0.16;
     col += uRim * vTint * (fres * uGlow + 0.06 * uGlow);
     gl_FragColor = vec4(col, 1.0);
     #include <tonemapping_fragment>

@@ -1,8 +1,57 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type PointerEvent as RPointerEvent } from 'react'
 import { GROUPS, ORDER, REALMS, TOUR, type RealmId } from '../data/realms'
-import { useCosmos } from '../state/store'
+import { isCompact, useCosmos } from '../state/store'
+import { Guide } from './Guide'
 import { drone } from '../audio/drone'
-import { IconClose, IconDown, IconEgg, IconInfo, IconList, IconMute, IconOrbit, IconPlay, IconSound, IconStop, IconUp } from './icons'
+import { IconClose, IconDown, IconEgg, IconHelp, IconInfo, IconList, IconMute, IconOrbit, IconPlay, IconSound, IconStop, IconUp } from './icons'
+
+// ---------------------------------------------------------------------------
+// Phone layout helpers
+// ---------------------------------------------------------------------------
+
+function useCompact() {
+  const [compact, setCompact] = useState(isCompact)
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 860px)')
+    const on = () => setCompact(mq.matches)
+    mq.addEventListener('change', on)
+    return () => mq.removeEventListener('change', on)
+  }, [])
+  return compact
+}
+
+/** Drag a bottom sheet down by its handle to dismiss it. */
+function useSheetDrag(onClose: () => void) {
+  const ref = useRef<HTMLElement>(null)
+  const start = useRef<number | null>(null)
+  const onPointerDown = (e: RPointerEvent) => {
+    start.current = e.clientY
+    ;(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)
+  }
+  const onPointerMove = (e: RPointerEvent) => {
+    if (start.current === null || !ref.current) return
+    const dy = Math.max(0, e.clientY - start.current)
+    ref.current.style.transition = 'none'
+    ref.current.style.transform = `translateY(${dy}px)`
+  }
+  const end = (e: RPointerEvent) => {
+    if (start.current === null || !ref.current) return
+    const dy = e.clientY - start.current
+    start.current = null
+    ref.current.style.transition = ''
+    ref.current.style.transform = ''
+    if (dy > 70) onClose()
+  }
+  return { ref, handle: { onPointerDown, onPointerMove, onPointerUp: end, onPointerCancel: end } }
+}
+
+function SheetHandle(props: ReturnType<typeof useSheetDrag>['handle']) {
+  return (
+    <div className="sheet-handle" {...props} aria-hidden="true">
+      <span />
+    </div>
+  )
+}
 
 // ---------------------------------------------------------------------------
 // Navigator: the cosmic axis, top to bottom.
@@ -13,8 +62,15 @@ function Navigator() {
   const goTo = useCosmos((s) => s.goTo)
   const navOpen = useCosmos((s) => s.navOpen)
   const setNavOpen = useCosmos((s) => s.setNavOpen)
+  const sheet = useSheetDrag(() => setNavOpen(false))
+  useEffect(() => {
+    if (!navOpen) return
+    const el = sheet.ref.current?.querySelector('.nav__item.is-active')
+    el?.scrollIntoView({ block: 'center' })
+  }, [navOpen, sheet.ref])
   return (
-    <nav className={`nav panel ${navOpen ? 'is-open' : ''}`} aria-label="Realms">
+    <nav ref={sheet.ref as React.RefObject<HTMLElement>} className={`nav panel ${navOpen ? 'is-open' : ''}`} aria-label="Realms">
+      <SheetHandle {...sheet.handle} />
       <div className="nav__head">
         <span className="eyebrow">Choose a destination</span>
         <button className="icon-btn nav__close" onClick={() => setNavOpen(false)} aria-label="Close list">
@@ -71,20 +127,26 @@ function InfoPanel() {
   const setOpen = useCosmos((s) => s.setInfoOpen)
   const r = REALMS[current]
   const bodyRef = useRef<HTMLDivElement>(null)
+  const sheet = useSheetDrag(() => setOpen(false))
   useEffect(() => {
     bodyRef.current?.scrollTo({ top: 0 })
   }, [current])
 
-  if (!open) {
-    return (
-      <button className="info-tab panel" onClick={() => setOpen(true)} style={{ ['--accent' as string]: r.accent }}>
-        <IconInfo size={16} /> About {r.name}
-      </button>
-    )
-  }
-
   return (
-    <aside className="info panel" style={{ ['--accent' as string]: r.accent }} aria-live="polite">
+    <>
+      {!open && (
+        <button className="info-tab panel desktop-only" onClick={() => setOpen(true)} style={{ ['--accent' as string]: r.accent }}>
+          <IconInfo size={16} /> About {r.name}
+        </button>
+      )}
+    <aside
+      ref={sheet.ref as React.RefObject<HTMLElement>}
+      className={`info panel ${open ? 'is-open' : ''}`}
+      style={{ ['--accent' as string]: r.accent }}
+      aria-hidden={!open}
+      aria-live="polite"
+    >
+      <SheetHandle {...sheet.handle} />
       <button className="icon-btn info__close" onClick={() => setOpen(false)} aria-label="Hide details">
         <IconClose />
       </button>
@@ -140,6 +202,7 @@ function InfoPanel() {
         </p>
       </div>
     </aside>
+    </>
   )
 }
 
@@ -163,14 +226,11 @@ function TopBar() {
         </div>
       </div>
       <div className="toolbar panel" role="toolbar" aria-label="View controls">
-        <button className="icon-btn mobile-only" onClick={() => s.setNavOpen(!s.navOpen)} aria-label="Realm list" title="Realm list">
-          <IconList />
-        </button>
         <button className={`tool ${s.tour ? 'is-on' : ''}`} onClick={() => (s.tour ? s.stopTour() : s.startTour())} title="Guided yātrā through the worlds">
           {s.tour ? <IconStop size={16} /> : <IconPlay size={16} />}
           <span>{s.tour ? `Yātrā ${s.tourIndex + 1}/${TOUR.length}` : 'Yātrā tour'}</span>
         </button>
-        <button className="icon-btn" onClick={() => s.goTo('brahmanda')} aria-label="Cosmic overview" title="Cosmic overview (Esc)">
+        <button className="icon-btn desktop-only" onClick={() => s.goTo('brahmanda')} aria-label="Cosmic overview" title="Cosmic overview (Esc)">
           <IconEgg />
         </button>
         <button className={`icon-btn ${s.autoOrbit ? 'is-on' : ''}`} onClick={s.toggleAutoOrbit} aria-label="Auto orbit" aria-pressed={s.autoOrbit} title="Slowly circle the view">
@@ -178,6 +238,9 @@ function TopBar() {
         </button>
         <button className={`icon-btn ${s.sound ? 'is-on' : ''}`} onClick={s.toggleSound} aria-label="Sound" aria-pressed={s.sound} title="Tanpura drone">
           {s.sound ? <IconSound /> : <IconMute />}
+        </button>
+        <button className={`icon-btn ${s.guideOpen ? 'is-on' : ''}`} onClick={() => s.setGuideOpen(!s.guideOpen)} aria-label="How to explore" title="How to explore">
+          <IconHelp />
         </button>
       </div>
     </header>
@@ -246,18 +309,116 @@ function Loader() {
   )
 }
 
-function Hint() {
-  const [show, setShow] = useState(true)
-  const traveling = useCosmos((s) => s.traveling)
-  useEffect(() => {
-    const t = setTimeout(() => setShow(false), 16000)
-    return () => clearTimeout(t)
-  }, [])
-  if (!show || traveling) return null
+/** Phone navigation, within thumb reach. */
+function Dock() {
+  const current = useCosmos((s) => s.current)
+  const step = useCosmos((s) => s.step)
+  const goTo = useCosmos((s) => s.goTo)
+  const navOpen = useCosmos((s) => s.navOpen)
+  const infoOpen = useCosmos((s) => s.infoOpen)
+  const setNavOpen = useCosmos((s) => s.setNavOpen)
+  const setInfoOpen = useCosmos((s) => s.setInfoOpen)
+  const r = REALMS[current]
+  const up = neighbour(current, -1)
+  const down = neighbour(current, 1)
   return (
-    <div className="hint panel" onClick={() => setShow(false)}>
-      Drag to orbit · Scroll to zoom · ↑ ↓ to move between worlds · Click a name to travel
-    </div>
+    <nav className="dock panel" aria-label="Navigation">
+      <button className={`dock__btn ${navOpen ? 'is-on' : ''}`} onClick={() => setNavOpen(!navOpen)} aria-expanded={navOpen}>
+        <IconList size={20} />
+        <span>Worlds</span>
+      </button>
+      <button className="dock__btn" disabled={!up} onClick={() => step(-1)} aria-label={up ? `Ascend to ${REALMS[up].name}` : 'Already at the top'}>
+        <IconUp size={20} />
+        <span>Up</span>
+      </button>
+      <button
+        className={`dock__here ${infoOpen ? 'is-on' : ''}`}
+        style={{ ['--accent' as string]: r.accent }}
+        onClick={() => setInfoOpen(!infoOpen)}
+        aria-expanded={infoOpen}
+        aria-label={`About ${r.name}`}
+      >
+        <span className="dock__dot" />
+        <span className="dock__labels">
+          <span className="dock__dev">{r.devanagari}</span>
+          <span className="dock__name">{r.name}</span>
+        </span>
+        <IconInfo size={16} />
+      </button>
+      <button className="dock__btn" disabled={!down} onClick={() => step(1)} aria-label={down ? `Descend to ${REALMS[down].name}` : 'Already at the bottom'}>
+        <IconDown size={20} />
+        <span>Down</span>
+      </button>
+      <button className={`dock__btn ${current === 'brahmanda' ? 'is-on' : ''}`} onClick={() => goTo('brahmanda')} aria-label="Cosmic overview">
+        <IconEgg size={20} />
+        <span>Cosmos</span>
+      </button>
+    </nav>
+  )
+}
+
+/** A short card naming the world you have just arrived in. */
+function ArrivalCard() {
+  const traveling = useCosmos((s) => s.traveling)
+  const ready = useCosmos((s) => s.ready)
+  const current = useCosmos((s) => s.current)
+  const infoOpen = useCosmos((s) => s.infoOpen)
+  const guideOpen = useCosmos((s) => s.guideOpen)
+  const setInfoOpen = useCosmos((s) => s.setInfoOpen)
+  const [show, setShow] = useState(false)
+  const first = useRef(true)
+  useEffect(() => {
+    if (!ready || traveling) {
+      setShow(false)
+      return
+    }
+    if (first.current) {
+      first.current = false
+      return
+    }
+    const s = useCosmos.getState()
+    if (s.infoOpen || s.guideOpen) return
+    setShow(true)
+    const t = setTimeout(() => setShow(false), 5200)
+    return () => clearTimeout(t)
+  }, [ready, traveling, current])
+  const r = REALMS[current]
+  const visible = show && !infoOpen && !guideOpen && !traveling
+  return (
+    <button
+      className={`arrival panel ${visible ? 'is-on' : ''}`}
+      style={{ ['--accent' as string]: r.accent }}
+      onClick={() => setInfoOpen(true)}
+      tabIndex={visible ? 0 : -1}
+      aria-hidden={!visible}
+    >
+      <span className="arrival__eyebrow">You are in</span>
+      <span className="arrival__name">
+        {r.name} <span className="dev">{r.devanagari}</span>
+      </span>
+      <span className="arrival__epithet">{r.epithet}</span>
+      <span className="arrival__cta">
+        Read its story <IconInfo size={14} />
+      </span>
+    </button>
+  )
+}
+
+function SheetBackdrop() {
+  const compact = useCompact()
+  const navOpen = useCosmos((s) => s.navOpen)
+  const infoOpen = useCosmos((s) => s.infoOpen)
+  const on = compact && (navOpen || infoOpen)
+  return (
+    <div
+      className={`sheet-backdrop ${on ? 'is-on' : ''}`}
+      onClick={() => {
+        const s = useCosmos.getState()
+        s.setNavOpen(false)
+        s.setInfoOpen(false)
+      }}
+      aria-hidden="true"
+    />
   )
 }
 
@@ -301,7 +462,12 @@ function useBehaviours() {
       } else if (e.key === 'ArrowDown') {
         e.preventDefault()
         s.step(1)
-      } else if (e.key === 'Escape') s.goTo('brahmanda')
+      } else if (e.key === 'Escape') {
+        if (s.guideOpen) s.setGuideOpen(false)
+        else if (s.navOpen && isCompact()) s.setNavOpen(false)
+        else if (s.infoOpen && isCompact()) s.setInfoOpen(false)
+        else s.goTo('brahmanda')
+      }
       else if (e.key.toLowerCase() === 'i') s.setInfoOpen(!s.infoOpen)
     }
     window.addEventListener('keydown', onKey)
@@ -314,11 +480,14 @@ export function Interface() {
   return (
     <div className="ui">
       <TopBar />
+      <SheetBackdrop />
       <Navigator />
       <InfoPanel />
       <StepControls />
+      <Dock />
+      <ArrivalCard />
       <TravelOverlay />
-      <Hint />
+      <Guide />
       <Loader />
     </div>
   )
