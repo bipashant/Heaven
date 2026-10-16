@@ -45,11 +45,66 @@ function bezier(p0: THREE.Vector3, c1: THREE.Vector3, c2: THREE.Vector3, p1: THR
 export function CameraRig() {
   const controls = useRef<OrbitControlsImpl>(null)
   const camera = useThree((s) => s.camera) as THREE.PerspectiveCamera
+  const gl = useThree((s) => s.gl)
   const requestId = useCosmos((s) => s.requestId)
   const flight = useRef<Flight | null>(null)
   const interacting = useRef(false)
   const lastInteract = useRef(-10)
   const first = useRef(true)
+  const escape = useRef({ count: 0, last: 0 })
+  const pinch = useRef<number | null>(null)
+
+  // Scrolling, trackpad-pinching or touch-pinching outward at a realm's edge
+  // a few times in a row carries you back out to the cosmic overview, the
+  // way “zoom out past the limit” works in map and globe apps.
+  useEffect(() => {
+    const el = gl.domElement
+    const DECAY_MS = 650
+    const TRIES = 3
+
+    function tryEscape() {
+      const ctr = controls.current
+      const st = useCosmos.getState()
+      if (!ctr || !ctr.enabled || st.traveling || st.current === 'brahmanda') return
+      const dist = camera.position.distanceTo(ctr.target)
+      if (dist < ctr.maxDistance * 0.985) {
+        escape.current.count = 0
+        return
+      }
+      const now = performance.now()
+      if (now - escape.current.last > DECAY_MS) escape.current.count = 0
+      escape.current.last = now
+      escape.current.count += 1
+      if (escape.current.count === 1) st.bumpBoundaryNudge()
+      if (escape.current.count >= TRIES) {
+        escape.current.count = 0
+        st.goTo('brahmanda')
+      }
+    }
+    const onWheel = (e: WheelEvent) => {
+      if (e.deltaY > 0) tryEscape()
+    }
+    const onTouchMove = (e: TouchEvent) => {
+      if (e.touches.length < 2) {
+        pinch.current = null
+        return
+      }
+      const d = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY)
+      if (pinch.current !== null && pinch.current - d > 3) tryEscape()
+      pinch.current = d
+    }
+    const onTouchEnd = () => {
+      pinch.current = null
+    }
+    el.addEventListener('wheel', onWheel, { passive: true })
+    el.addEventListener('touchmove', onTouchMove, { passive: true })
+    el.addEventListener('touchend', onTouchEnd)
+    return () => {
+      el.removeEventListener('wheel', onWheel)
+      el.removeEventListener('touchmove', onTouchMove)
+      el.removeEventListener('touchend', onTouchEnd)
+    }
+  }, [gl, camera])
 
   useLayoutEffect(() => {
     const r = REALMS.brahmanda

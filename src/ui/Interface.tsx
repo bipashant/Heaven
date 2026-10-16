@@ -404,6 +404,29 @@ function ArrivalCard() {
   )
 }
 
+/** First time you hit a realm's zoom limit, hints that zooming out again returns to the cosmos. */
+function EdgeHint() {
+  const nudge = useCosmos((s) => s.boundaryNudge)
+  const current = useCosmos((s) => s.current)
+  const [show, setShow] = useState(false)
+  const prev = useRef(nudge)
+  useEffect(() => {
+    if (nudge === prev.current) return
+    prev.current = nudge
+    if (current === 'brahmanda') return
+    // skip if the arrival card is already showing, so they don't overlap
+    if (document.querySelector('.arrival.is-on')) return
+    setShow(true)
+    const t = setTimeout(() => setShow(false), 3200)
+    return () => clearTimeout(t)
+  }, [nudge, current])
+  return (
+    <div className={`edge-hint panel ${show ? 'is-on' : ''}`} aria-hidden={!show}>
+      Keep zooming out to return to the cosmic view
+    </div>
+  )
+}
+
 function SheetBackdrop() {
   const compact = useCompact()
   const navOpen = useCosmos((s) => s.navOpen)
@@ -486,6 +509,7 @@ export function Interface() {
       <StepControls />
       <Dock />
       <ArrivalCard />
+      <EdgeHint />
       <TravelOverlay />
       <Guide />
       <Loader />
