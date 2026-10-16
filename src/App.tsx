@@ -1,6 +1,7 @@
 import { Suspense, useEffect, useState } from 'react'
 import { Canvas } from '@react-three/fiber'
 import * as THREE from 'three'
+import { SpeedInsights } from '@vercel/speed-insights/react'
 import { Experience } from './three/Experience'
 import { Interface } from './ui/Interface'
 import { LabelLayer } from './three/parts/Labels'
@@ -49,6 +50,7 @@ export default function App() {
       </div>
       <LabelLayer />
       <Interface />
+      <SpeedInsights />
     </>
   )
 }
